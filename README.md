@@ -2,6 +2,10 @@
 
 FitFindr is an AI agent that helps users find secondhand clothing and style it. Given a natural language query, it searches a mock dataset of thrifted listings, picks the best match, suggests outfits using the user's wardrobe, and generates a shareable caption — all in a fixed planning loop.
 
+## Video Walkthrough
+
+https://github.com/user-attachments/assets/47412272-76fa-4881-8158-7a51f7ccc2dc
+
 ## Setup
 
 ```bash
@@ -116,6 +120,8 @@ Nothing is passed between functions directly as arguments beyond what the functi
 ---
 
 ## Error Handling
+
+For each tool, describe the specific failure mode you're handling and what the agent does in response.
 
 | Tool | Failure mode | Agent response |
 |------|-------------|----------------|
