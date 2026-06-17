@@ -31,6 +31,7 @@ Each listing dictionary contains the following fields: "id", "title", "descripti
 **What happens if it fails or returns nothing:**
 <!-- What should the agent do if no listings match? -->
 Returns an empty list if nothing matches.
+
 ---
 
 ### Tool 2: suggest_outfit
@@ -72,6 +73,7 @@ It returns a 2–4 sentence string usable as an Instagram/TikTok caption.
 **What happens if it fails or returns nothing:**
 <!-- What should the agent do if the outfit data is incomplete? -->
 If outfit is empty or missing, the agent returns a descriptive error message string.
+
 ---
 
 ### Additional Tools (if any)
@@ -142,6 +144,7 @@ For each tool, describe the specific failure mode you're handling and what the a
      sketch are all fine. You'll share this diagram with an AI tool when asking it to implement
      the planning loop and each individual tool. -->
 
+```text
 User Query
     │
     ▼
@@ -181,6 +184,7 @@ Planning Loop ──────────────────────
             │                                                │
             ▼                                                │
         RETURN session (DONE) ◄──────────────────────────────┘
+```
 
 ---
 
