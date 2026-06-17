@@ -104,11 +104,8 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     size = size_match.group(1) if size_match else None
 
     # Strip price/size clauses from query to get the core description
-    description = query
-    if price_match:
-        description = description[:price_match.start()] + description[price_match.end():]
-    if size_match:
-        description = description[:size_match.start()] + description[size_match.end():]
+    description = re.sub(r'under\s*\$?[\d]+(?:\.\d+)?', '', query, flags=re.IGNORECASE)
+    description = re.sub(r'\bsize\s+\S+', '', description, flags=re.IGNORECASE)
     description = re.sub(r'\s+', ' ', description).strip(" ,.")
 
     session["parsed"] = {"description": description, "size": size, "max_price": max_price}

@@ -125,9 +125,9 @@ For each tool, describe the specific failure mode you're handling and what the a
 
 | Tool | Failure mode | Agent response |
 |------|-------------|----------------|
-| search_listings | No results match the query | The agent sets session["error"] to a helpful message (e.g., "No listings found matching your criteria. Try adjusting your search.") and stops the process early without calling any further tools. |
-| suggest_outfit | Wardrobe is empty | The agent still calls suggest_outfit(), but the tool may return a limited or empty outfit suggestion. The agent can include a message indicating that the wardrobe is empty and suggest adding items. |
-| create_fit_card | Outfit input is missing or incomplete | The agent sets session["error"] to a message indicating that a valid outfit could not be generated and stops the process without creating a fit card. |
+| search_listings | No results match the query | The agent returned the following message: "No listings found matching your criteria. Try broadening your search or adjusting the size or price." |
+| suggest_outfit | Wardrobe is empty | The agent returned the following message:<br><br>"You've found a cute thrifted gem. That Y2K baby tee with a butterfly print is perfect for anyone who loves a nostalgic, playful vibe. Since it's a graphic tee, it's pretty versatile, but I'd say it pairs really well with pieces that complement its sweet, feminine aesthetic.<br><br>For a head-to-toe look, you could pair this tee with some high-waisted jeans or a flowy skirt in a neutral color like beige, white, or light blue. The white, pink, and purple hues in the butterfly print will add a pop of color to your outfit, so you can keep the rest of your look relatively simple. If you want to lean into the cottagecore style tag, you could throw on a pair of distressed denim shorts and some sneakers for a casual, laid-back look.<br><br>To add some extra flair to your outfit, consider layering a cardigan or a kimono over the tee. A pastel-colored cardigan would be a great match, as it'll enhance the soft, dreamy quality of the butterfly print. You could also add a wide-brimmed hat, a choker, or a pair of layered necklaces to give your look a more bohemian feel.<br><br>In terms of shoes, you've got a few options. Sneakers are a great choice for a casual look, but you could also wear ankle boots or sandals to dress it up slightly. The goal is to balance the sweetness of the butterfly print with more grounded pieces.<br><br>Since you don't have a wardrobe on file yet, this tee could be a great starting point for building a new aesthetic. You could use it as an anchor piece and add other items that fit the Y2K or cottagecore vibe." |
+| create_fit_card | Outfit input is missing or incomplete | The agent sets session["error"] to: "Error: no outfit suggestion available — run suggest_outfit first to generate outfit ideas." |
 
 ---
 
@@ -199,8 +199,21 @@ Planning Loop ──────────────────────
 
 **Milestone 3 — Individual tool implementations:**
 
+I used Claude Code to help implement each tool. For each one, I gave it the tool spec from this file — the inputs, what it returns, and what to do if it fails — and asked it to write the function body.
+
+For search_listings(), I asked Claude to filter listings by price and size first, then score each result by how many keywords from the description appear in the listing's title, description, and tags. I tested it by running a few queries manually and checking that results came back in the right order and that items over the price limit were excluded.
+
+For suggest_outfit(), I told Claude to check if the wardrobe is empty and use a different prompt depending on the answer. I tested it with both an example wardrobe and an empty one to make sure both cases returned a useful response.
+
+For create_fit_card(), I told Claude to return an error message string if the outfit input is empty, and otherwise ask the LLM for a short caption that mentions the item name, price, and platform. I tested it with an empty string to confirm it didn't crash, and with a real outfit to check the caption looked right.
 
 **Milestone 4 — Planning loop and state management:**
+
+I used Claude Code to implement run_agent() in agent.py and handle_query() in app.py.
+
+For run_agent(), I shared the Planning Loop, State Management, and Architecture sections of this file and asked Claude to follow the seven steps I described. I verified the result by printing session["selected_item"] and the input actually passed to suggest_outfit() to confirm they were the same. I also ran the no-results query ("designer ballgown size XXS under $5") and confirmed that session["error"] was set and suggest_outfit() was never called.
+
+For handle_query(), I gave Claude the function description and asked it to handle the empty query case, pick the right wardrobe, call run_agent(), and format the selected item into readable text for the first panel. I tested it by running the app and trying the example queries.
 
 ---
 
@@ -211,13 +224,16 @@ Write out what a full user interaction looks like from start to finish — tool 
 **Example user query:** "I'm looking for a vintage graphic tee under $30. I mostly wear baggy jeans and chunky sneakers. What's out there and how would I style it?"
 
 **Step 1:**
-<!-- What does the agent do first? Which tool is called? With what input? -->
+The agent initializes the session and parses the query. It finds "under $30" and sets max_price to 30.0. There is no size mentioned, so size is left as None. The rest of the query — "vintage graphic tee" — becomes the description. These values are stored in session["parsed"].
 
 **Step 2:**
-<!-- What happens next? What was returned from step 1? What tool is called now? -->
+The agent calls search_listings() with description="vintage graphic tee" and max_price=30.0. It filters out anything over $30, scores the remaining listings by keyword match, and returns a ranked list. The top result is the Y2K Baby Tee – Butterfly Print at $18 on Depop. The list is saved in session["search_results"] and the top item in session["selected_item"].
 
 **Step 3:**
-<!-- Continue until the full interaction is complete -->
+The agent calls suggest_outfit() using session["selected_item"] and the user's wardrobe. The LLM suggests two outfits that pair the baby tee with specific pieces from the wardrobe. The result is saved in session["outfit_suggestion"].
+
+**Step 4 (final tool call):**
+The agent calls create_fit_card() using session["outfit_suggestion"] and session["selected_item"]. The LLM returns a short caption that mentions the item name, $18 price, and Depop. The result is saved in session["fit_card"]. The agent returns the session.
 
 **Final output to user:**
-<!-- What does the user actually see at the end? -->
+The Gradio UI shows three panels — the listing details for the Y2K Baby Tee, the outfit suggestion with named wardrobe pieces, and the fit card caption ready to share.

@@ -209,10 +209,13 @@ def create_fit_card(outfit: str, new_item: dict) -> str:
         f"Style tags: {', '.join(new_item.get('style_tags', []))}\n\n"
         f"Outfit: {outfit}\n\n"
         "Guidelines:\n"
-        "- Sound casual and authentic, like a real person posting their OOTD — not a product description\n"
+        "- Sound casual, excited, and authentic, like a real person posting their OOTD — not a product description\n"
         "- Mention the item name, price, and platform once each, woven in naturally\n"
         "- Capture the specific vibe of the outfit in vivid terms\n"
+        "- Use 1–3 emojis naturally (do not overuse them)\n"
+        "- Use expressive tone and include light punctuation like '!' where appropriate\n"
         "- Return only the caption text, no hashtags, no extra commentary"
+
     )
 
     response = client.chat.completions.create(
